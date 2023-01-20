@@ -1,0 +1,2 @@
+﻿param($dl)
+Get-DistributionGroupMember -Identity $dl | Sort-Object manager, name | Format-Table @{Name="Member";Expression={$_.name}}, title, manager, @{Name="Email Address";Expression={$_.primarysmtpaddress}}
