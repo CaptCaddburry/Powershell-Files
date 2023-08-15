@@ -14,14 +14,15 @@ function Check_Password {
     $CurrentPassword.ForeColor = "#000000"
     $username = $TextBox.Text
     $currentTime = Get-Date -UFormat "%m/%d/%Y %r"
-    $currentTimeCheck = Get-Date -UFormat "%r"
+    $currentTimeCheck = Get-Date -UFormat "%R"
+    $currentTimeLogTime = Get-Date -UFormat "%r"
     $currentTimeLogFolder = Get-Date -UFormat "%m-%Y"
     $currentTimeLogFile = Get-Date -UFormat "%m-%d-%Y"
     $lockedOut = (get-aduser $username -Properties "LockedOut")."LockedOut"
     $passwordChanged = (get-aduser $username -Properties passwordlastset).PasswordLastSet
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
-    $newPasswordCheck = Get-Date -Date $newPassword -UFormat "%r"
+    $newPasswordCheck = Get-Date -Date $newPassword -UFormat "%R"
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
@@ -29,22 +30,28 @@ function Check_Password {
     $TimeDisplay.Text = "Current Time: " + $currentTime
     $UserLock.Text = "Locked Out: " + $lockedOut
     $ChangedPassword.Text = "Password Last Set: " + $passwordChanged
-    if(($currentTime -ge $newPassword) -and ($currentTimeCheck -ge $newPasswordCheck)) {
-        $CurrentPassword.ForeColor = "#ff0000"
+    if($currentTime -ge $newPassword) {
+        if($currentTimeCheck -ge $newPasswordCheck) {
+            $CurrentPassword.ForeColor = "#ff0000"
+        }
     }
     $CurrentPassword.Text = "Password Expires: " + $newPassword
     $TextBox.Text = ""
-    #This section will append the requested information into a csv file at the specific location
-    $logPath = "FILEPATH"
-    New-Item -ItemType Directory -Force -Path $logPath -Name $currentTimeLogFolder
-    $logFile = $logPath + $currentTimeLogFolder + "\Password_Log_" + $currentTimeLogFile + ".csv"
-    $reportLog = @($username, $currentTimeCheck, $lockedOut, $passwordChanged, $newPassword)
-    $reportName = @("Username", "Current Time", "Locked Out", "Password Last Set", "Password Expires")
-    $userObj = New-Object PSObject
-    for($i = 0; $i -lt $reportLog.Length; $i++) {
-        $userObj | Add-Member -MemberType NoteProperty -Name $reportName[$i] -Value $reportLog[$i]
+    if($newPassword -ne "12/31/1600 7:00:00 PM") {
+        #This section will append the requested information into a csv file at the specific location
+        $logPath = "$($env:UserProfile){LOCATION}"
+        if(!(Test-Path ($logPath + $currentTimeLogFolder))) {
+            New-Item -ItemType Directory -Force -Path $logPath -Name $currentTimeLogFolder
+        }
+        $logFile = $logPath + $currentTimeLogFolder + "\Password_Log_" + $currentTimeLogFile + ".csv"
+        $reportLog = @($username, $currentTimeLogTime, $lockedOut, $passwordChanged, $newPassword)
+        $reportName = @("Username", "Current Time", "Locked Out", "Password Last Set", "Password Expires")
+        $userObj = New-Object PSObject
+        foreach ($i in 0..($reportLog.Length - 1)) {
+            $userObj | Add-Member -MemberType NoteProperty -Name $reportName[$i] -Value $reportLog[$i]
+        }
+        $userObj | Export-Csv -Path $logFile -NoTypeInformation -Append
     }
-    $userObj | Export-Csv -Path $logFile -NoTypeInformation -Append
 }
 
 #This function is to clear out the previous search
