@@ -21,6 +21,8 @@ function Check_Password {
     $passwordChanged = (get-aduser $username -Properties passwordlastset).PasswordLastSet
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
+    $treeLocation = (get-aduser $username -Properties CanonicalName).CanonicalName
+    $treeLocation = $treeLocation.substring(40)
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
@@ -32,6 +34,7 @@ function Check_Password {
         $CurrentPassword.ForeColor = "#ff0000"
     }
     $CurrentPassword.Text = "Password Expires: " + $newPassword
+    $CanonicalName.Text = "Location: " + $treeLocation
     $TextBox.Text = ""
     if($newPassword -ne "12/31/1600 7:00:00 PM") {
         #This section will append the requested information into a csv file at the specific location
@@ -40,8 +43,8 @@ function Check_Password {
             New-Item -ItemType Directory -Force -Path $logPath -Name $currentTimeLogFolder
         }
         $logFile = $logPath + $currentTimeLogFolder + "\Password_Log_" + $currentTimeLogFile + ".csv"
-        $reportLog = @($username, $currentTimeLogTime, $lockedOut, $passwordChanged, $newPassword)
-        $reportName = @("Username", "Current Time", "Locked Out", "Password Last Set", "Password Expires")
+        $reportLog = @($username, $currentTimeLogTime, $lockedOut, $passwordChanged, $newPassword, $treeLocation)
+        $reportName = @("Username", "Current Time", "Locked Out", "Password Last Set", "Password Expires", "Location")
         $userObj = New-Object PSObject
         foreach ($i in 0..($reportLog.Length - 1)) {
             $userObj | Add-Member -MemberType NoteProperty -Name $reportName[$i] -Value $reportLog[$i]
@@ -60,6 +63,7 @@ function Clear_Window {
     $ChangedPassword.Text = ""
     $CurrentPassword.Text = ""
     $CurrentPassword.ForeColor = "#000000"
+    $CanonicalName.Text = ""
 }
 
 #This function closes the GUI
@@ -71,7 +75,7 @@ function Close_Window {
 
 #This is the frame of the GUI
 $PasswordGUI = New-Object System.Windows.Forms.Form
-$PasswordGUI.ClientSize = '300,300'
+$PasswordGUI.ClientSize = '300,325'
 $PasswordGUI.text = "Password Expiration"
 $PasswordGUI.BackColor = "#ffffff"
 
@@ -123,13 +127,18 @@ $CurrentPassword.AutoSize = $true
 $CurrentPassword.location = New-Object System.Drawing.Point(20,210)
 $CurrentPassword.Font = $displayFont
 
+$CanonicalName = New-Object System.Windows.Forms.Label
+$CanonicalName.AutoSize = $true
+$CanonicalName.location = New-Object System.Drawing.Point(20,240)
+$CanonicalName.Font = $displayFont
+
 #Designs the Submit Button
 $SubmitButton = New-Object system.Windows.Forms.Button
 $SubmitButton.BackColor = "#012456"
 $SubmitButton.text = "Submit"
 $SubmitButton.width = $buttonWidth
 $SubmitButton.height = $buttonHeight
-$SubmitButton.location = New-Object System.Drawing.Point(35,250)
+$SubmitButton.location = New-Object System.Drawing.Point(35,275)
 $SubmitButton.Font = $displayFont
 $SubmitButton.ForeColor = "#ffffff"
 $SubmitButton.Add_Click({ Check_Password })
@@ -140,7 +149,7 @@ $ClearButton.BackColor = "#d0d0d0"
 $ClearButton.text = "Clear"
 $ClearButton.width = $buttonWidth
 $ClearButton.height = $buttonHeight
-$ClearButton.location = New-Object System.Drawing.Point(123,250)
+$ClearButton.location = New-Object System.Drawing.Point(123,275)
 $ClearButton.Font = $displayFont
 $ClearButton.ForeColor = "#000000"
 $ClearButton.Add_Click({ Clear_Window })
@@ -151,13 +160,13 @@ $CloseButton.BackColor = "#b0b0b0"
 $CloseButton.text = "Close"
 $CloseButton.width = $buttonWidth
 $CloseButton.height = $buttonHeight
-$CloseButton.location = New-Object System.Drawing.Point(210,250)
+$CloseButton.location = New-Object System.Drawing.Point(210,275)
 $CloseButton.Font = $displayFont
 $CloseButton.ForeColor = "#000000"
 $CloseButton.Add_Click({ Close_Window })
 
 #This line adds each item to the GUI Window
-$PasswordGUI.controls.AddRange(@($Title,$TextBox,$DisplayUsername,$TimeDisplay,$UserLock,$ChangedPassword,$CurrentPassword,$SubmitButton,$ClearButton,$CloseButton))
+$PasswordGUI.controls.AddRange(@($Title,$TextBox,$DisplayUsername,$TimeDisplay,$UserLock,$ChangedPassword,$CurrentPassword,$SubmitButton,$ClearButton,$CloseButton,$CanonicalName))
 
 #This line displays the GUI Window
 [void]$PasswordGUI.ShowDialog()
