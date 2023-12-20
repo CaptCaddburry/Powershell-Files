@@ -14,7 +14,6 @@ function Check_Password {
     $CurrentPassword.ForeColor = "#000000"
     $username = $TextBox.Text
     $currentTime = Get-Date -UFormat "%m/%d/%Y %r"
-    $currentTimeCheck = Get-Date -UFormat "%R"
     $currentTimeLogTime = Get-Date -UFormat "%r"
     $currentTimeLogFolder = Get-Date -UFormat "%m-%Y"
     $currentTimeLogFile = Get-Date -UFormat "%m-%d-%Y"
@@ -22,7 +21,6 @@ function Check_Password {
     $passwordChanged = (get-aduser $username -Properties passwordlastset).PasswordLastSet
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
-    $newPasswordCheck = Get-Date -Date $newPassword -UFormat "%R"
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
@@ -30,10 +28,8 @@ function Check_Password {
     $TimeDisplay.Text = "Current Time: " + $currentTime
     $UserLock.Text = "Locked Out: " + $lockedOut
     $ChangedPassword.Text = "Password Last Set: " + $passwordChanged
-    if($currentTime -ge $newPassword) {
-        if($currentTimeCheck -ge $newPasswordCheck) {
-            $CurrentPassword.ForeColor = "#ff0000"
-        }
+    if($newPassword -lt $currentTime) {
+        $CurrentPassword.ForeColor = "#ff0000"
     }
     $CurrentPassword.Text = "Password Expires: " + $newPassword
     $TextBox.Text = ""
