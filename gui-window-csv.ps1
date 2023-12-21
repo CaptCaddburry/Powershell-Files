@@ -22,7 +22,8 @@ function Check_Password {
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
     $treeLocation = (get-aduser $username -Properties CanonicalName).CanonicalName
-    $treeLocation = $treeLocation.substring(40)
+    $ouIndex = $treeLocation.IndexOf('Active-Users/')
+    $ouLocation = ($treeLocation.substring($ouIndex)).Replace('Active-Users/', '')
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
@@ -34,7 +35,7 @@ function Check_Password {
         $CurrentPassword.ForeColor = "#ff0000"
     }
     $CurrentPassword.Text = "Password Expires: " + $newPassword
-    $CanonicalName.Text = "Location: " + $treeLocation
+    $CanonicalName.Text = "Location: " + $ouLocation
     $TextBox.Text = ""
     if($newPassword -ne "12/31/1600 7:00:00 PM") {
         #This section will append the requested information into a csv file at the specific location
@@ -43,7 +44,7 @@ function Check_Password {
             New-Item -ItemType Directory -Force -Path $logPath -Name $currentTimeLogFolder
         }
         $logFile = $logPath + $currentTimeLogFolder + "\Password_Log_" + $currentTimeLogFile + ".csv"
-        $reportLog = @($username, $currentTimeLogTime, $lockedOut, $passwordChanged, $newPassword, $treeLocation)
+        $reportLog = @($username, $currentTimeLogTime, $lockedOut, $passwordChanged, $newPassword, $ouLocation)
         $reportName = @("Username", "Current Time", "Locked Out", "Password Last Set", "Password Expires", "Location")
         $userObj = New-Object PSObject
         foreach ($i in 0..($reportLog.Length - 1)) {
