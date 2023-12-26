@@ -22,8 +22,10 @@ function Check_Password {
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
     $treeLocation = (get-aduser $username -Properties CanonicalName).CanonicalName
+    $adName = (get-aduser $username -Properties Name).Name
     $ouIndex = $treeLocation.IndexOf('Active-Users/')
     $ouLocation = ($treeLocation.substring($ouIndex)).Replace('Active-Users/', '')
+    $ouLocation = $ouLocation.Replace('/' + $adName, '')
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
