@@ -24,8 +24,7 @@ function Check_Password {
     $treeLocation = (get-aduser $username -Properties CanonicalName).CanonicalName
     $adName = (get-aduser $username -Properties Name).Name
     $ouIndex = $treeLocation.IndexOf('Active-Users/')
-    $ouLocation = ($treeLocation.substring($ouIndex)).Replace('Active-Users/', '')
-    $ouLocation = $ouLocation.Replace('/' + $adName, '')
+    $ouLocation = (($treeLocation.substring($ouIndex)).Replace('Active-Users/', '')).Replace('/' + $adName, '')
     $DisplayUsername.Text = "Username: " + $username
     if($lockedOut -eq $true) {
         $UserLock.ForeColor = "#ff0000"
