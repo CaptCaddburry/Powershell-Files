@@ -13,6 +13,10 @@ While ($true) {
     $passwordChanged = (get-aduser $username -Properties passwordlastset).PasswordLastSet
     $tempNewPassword = (get-aduser $username -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
     $newPassword = ([datetime]::FromFileTime($tempNewPassword))
+    $adName = (get-aduser $username -Properties Name).Name
+    $treeLocation = (get-aduser $username -Properties CanonicalName).CanonicalName
+    $ouIndex = $treeLocation.IndexOf('Active-Users/')
+    $ouLocation = (($treeLocation.substring($ouIndex)).Replace('Active-Users/', '')).Replace('/' + $adName, '')
         #Write-Host "User's Manager:" $manager -ForegroundColor Yellow
     Write-Host "Current Time:" $currentTime
     if ($lockedOut -eq "True") {
@@ -21,6 +25,11 @@ While ($true) {
         Write-Host "User Locked Out:" $lockedOut -ForegroundColor Yellow
     }
     Write-Host "Password Last Set:" $passwordChanged
-    Write-Host "Password Expires:" $newPassword
+    if($newPassword -lt $currentTime) {
+        Write-Host "Password Expires:" $newPassword -ForegroundColor Red
+    } else {
+        Write-Host "Password Expires:" $newPassword
+    }
+    Write-Host "Location: " $ouLocation
     Write-Host "*******************************************************" -ForegroundColor Green
 }
