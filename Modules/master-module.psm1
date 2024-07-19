@@ -104,7 +104,7 @@ function Get-DynamicDistroMembers(
         .DESCRIPTION
         This will look up every user in the Exchange server that has the specified user listed as their manager.
         Everyone showing in this list will be added to the dynamic distribution list.
-        If a user isn't showing up in this list when they should be, run Get-ADUser and check thier Manager parameter.
+        If a user isn't showing up in this list when they should be, check their Manager parameter.
 
         .PARAMETER DirectManager
         Specifies the manager's AD username of the dynamic distribution list
