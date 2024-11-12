@@ -4,6 +4,40 @@
 #
 $PSDefaultParameterValues['*-AD*:Server'] = {SERVER_NAME}
 
+function Get-AssignedDistros(
+    [Parameter(Mandatory)] $Username) {
+        <#
+        .SYNOPSIS
+        Display all distribution lists that a user is assigned to.
+
+        .DESCRIPTION
+        This will list all the distribution lists that the specified user is a member of.
+
+        .PARAMETER Username
+        Specifies the user's email address
+
+        .INPUTS
+        PS> Get-AssignedDistros -Username "james.cadd@domain.com"
+
+        .OUTPUTS
+        Username: james.cadd@domain.com
+
+        DisplayName                 PrimarySmtpAddress
+        -----------                 ------------------
+        Company_Name Employee       Company_Name-employee@domain.com
+        Desk Egg Squad              desk-egg-squad-dl@domain.com
+        General Employee Population general-employee-population@marlettefunding.com
+        Prey Alerts                 prey-alerts@marlettefunding.com
+        tech-org                    tech-org@domain.com
+        #>
+
+        $DistroResults = Get-DistributionGroup | Where-Object {(Get-DistributionGroupMember $_.Name | ForEach-Object {$_.PrimarySmtpAddress}) -contains "$Username"} | Format-Table DisplayName, PrimarySmtpAddress
+        Clear-Host
+        Write-Host "Username: " -NoNewline
+        Write-Host $Username -ForegroundColor Yellow
+        $DistroResults
+}
+
 function Get-DistroMembers(
     [Parameter(Mandatory)] $DistributionList) {
         <#
