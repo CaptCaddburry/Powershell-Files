@@ -39,6 +39,37 @@ function Get-AssignedDistros(
         $DistroResults
 }
 
+function Get-AssignedShared(
+    [Parameter(Mandatory)] $Username) {
+        <#
+        .SYNOPSIS
+        Display all shared mailboxes that a user is assigned to.
+
+        .DESCRIPTION
+        This will list all the shared mailboxes that the specified user is a member of.
+        You must first be connected to the server by using the Connect-ExchangeOnline command.
+
+        .PARAMETER Username
+        Specifies the user's email address.
+
+        .INPUTS
+        PS> Get-AssignedShared -Username "james.cadd@domain.com"
+
+        .OUTPUTS
+        Username: james.cadd@domain.com
+
+        DisplayName         PrimarySmtpAddress
+        -----------         ------------------
+        Desk Egg Squad Team desk-egg-squad@domain.com
+        #>
+
+        $SharedResults = Get-Mailbox -ResultSize Unlimited | Get-MailboxPermission -User $Username | Where-Object {$_.AccessRights -match "FullAccess" -and $_.IsInherited -eq $False} | ForEach-Object {Get-Mailbox $_.Identity | Select-Object DisplayName, PrimarySmtpAddress}
+        Clear-Host
+        Write-Host "Username: " -NoNewline
+        Write-Host $Username -ForegroundColor Yellow
+        $SharedResults
+    }
+
 function Get-DistroMembers(
     [Parameter(Mandatory)] $DistributionList) {
         <#
