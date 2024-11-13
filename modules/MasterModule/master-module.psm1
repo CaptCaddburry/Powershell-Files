@@ -68,7 +68,7 @@ function Get-AssignedShared(
         Write-Host "Username: " -NoNewline
         Write-Host $Username -ForegroundColor Yellow
         $SharedResults
-    }
+}
 
 function Get-DistroMembers(
     [Parameter(Mandatory)] $DistributionList) {
