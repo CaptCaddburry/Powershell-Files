@@ -352,15 +352,19 @@ function Get-ADLockouts(
         James Cadd   james.cadd1    6/3/2024 08:00:00 AM         0
         Colin Turner colin.turner1  6/5/2024 08:00:00 AM         0
         #>
-
-        Clear-Host
         
+        Write-Host "Checking accounts..."
+
         $CurrentTime = Get-Date
         $PreviousDays = (Get-Date).AddDays($DayCount)
         $AccountPasswords = Get-ADUser -Filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} -Properties "DisplayName", "SamAccountName", "msDS-UserPasswordExpiryTimeComputed" | Select-Object -Property "DisplayName", "SamAccountName", @{Name="Expiration Date";Expression={[datetime]::FromFileTime($_."msDS-UserPasswordExpiryTimeComputed")}} | Where-Object {$_."Expiration Date" -lt $CurrentTime -and $_."Expiration Date" -gt $PreviousDays} | Sort-Object "DisplayName" | Format-Table
         $AccountLockouts = Get-ADUser -Filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} -Properties "DisplayName", "SamAccountName", "lockedOut", "lockoutTime" | Select-Object -Property "DisplayName", "SamAccountName", "lockedOut", @{Name="Lockout Time";Expression={[datetime]::FromFileTime($_."lockoutTime")}} | Where-Object {$_."lockedOut" -eq $True} | Sort-Object "DisplayName" | Format-Table -Property "DisplayName", "SamAccountName", "Lockout Time"
         $AccountDuplicates = Get-ADUser -Filter {Enabled -eq $True -and PasswordNeverExpires -eq $False} -Properties "DisplayName", "SamAccountName", "WhenCreated", "LastLogon" | Where-Object "SamAccountName" -like "*[0-9]" | Sort-Object "SamAccountName" | Format-Table -Property "DisplayName", "SamAccountName", "WhenCreated", "LastLogon"
 
+        Write-Host "Compiling lists..."
+        Start-Sleep -Seconds 3
+        Clear-Host
+        Start-Sleep -Seconds 2
         Write-Host "Accounts with Expired Passwords:" -ForegroundColor Yellow
         CheckString $AccountPasswords
         Write-Host "Locked Out Accounts:" -ForegroundColor Yellow
