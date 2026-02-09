@@ -2,7 +2,7 @@ $taskName = "WeeklyUptimeRebootCheck"
 
 $scriptBlock = {
     $uptimeDays = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
-    $uptime = (New-TimeSpan -Start `$uptimeDays -End (Get-Date)).Days
+    $uptime = (New-TimeSpan -Start $uptimeDays -End (Get-Date)).Days
     if ($uptime -ge 7) {
         shutdown.exe /r /t 900 /c 'IT Notice: Automatic Restart in 15 minute(s). Save your work now.' /d p:5:19
     }
