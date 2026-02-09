@@ -13,7 +13,7 @@ $action = New-ScheduledTaskAction `
     -Execute "powershell.exe" `
     -Argument "-NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedScript"
 
-$trigger = New-ScheduledTaskTrigger -AtStartup
+$trigger = New-ScheduledTaskTrigger -AtLogon
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest
 
 Register-ScheduledTask `
