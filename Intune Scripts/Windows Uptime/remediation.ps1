@@ -9,4 +9,4 @@ try {
 } catch {
     Write-Error "Failed to schedule reboot: $($_.Exception.Message)"
     exit 1
-}≈
+}
